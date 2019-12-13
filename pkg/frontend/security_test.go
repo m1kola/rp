@@ -10,6 +10,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"github.com/jim-minter/rp/pkg/api"
+	"github.com/jim-minter/rp/pkg/api/v20191231preview"
 	"github.com/jim-minter/rp/pkg/env"
 	utiltls "github.com/jim-minter/rp/pkg/util/tls"
 	"github.com/jim-minter/rp/test/util/listener"
@@ -41,7 +43,11 @@ func TestSecurity(t *testing.T) {
 	pool := x509.NewCertPool()
 	pool.AddCert(env.TLSCerts[0])
 
-	f, err := NewFrontend(ctx, logrus.NewEntry(logrus.StandardLogger()), env, nil)
+	apis := map[string]api.Version{
+		"2019-12-31-preview": v20191231preview.NewAPI(env),
+	}
+
+	f, err := NewFrontend(ctx, logrus.NewEntry(logrus.StandardLogger()), env, nil, apis)
 	if err != nil {
 		t.Fatal(err)
 	}

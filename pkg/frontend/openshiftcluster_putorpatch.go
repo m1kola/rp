@@ -23,7 +23,7 @@ func (f *frontend) putOrPatchOpenShiftCluster(w http.ResponseWriter, r *http.Req
 	var created bool
 	err := cosmosdb.RetryOnPreconditionFailed(func() error {
 		var err error
-		b, created, err = f._putOrPatchOpenShiftCluster(r, api.APIs[vars["api-version"]]["OpenShiftCluster"].(api.OpenShiftClusterToInternal), api.APIs[vars["api-version"]]["OpenShiftCluster"].(api.OpenShiftClusterToExternal))
+		b, created, err = f._putOrPatchOpenShiftCluster(r, f.apis[vars["api-version"]].OpenShiftCluster(), f.apis[vars["api-version"]].OpenShiftCluster())
 		return err
 	})
 	if err == nil && created {
@@ -134,7 +134,7 @@ func (f *frontend) _putOrPatchOpenShiftCluster(r *http.Request, internal api.Ope
 		doc.Dequeues = 0
 	}
 
-	err = internal.ValidateOpenShiftClusterDynamic(r.Context(), f.env.FPAuthorizer, doc.OpenShiftCluster)
+	err = internal.ValidateOpenShiftClusterDynamic(r.Context(), doc.OpenShiftCluster)
 	if err != nil {
 		return nil, false, err
 	}

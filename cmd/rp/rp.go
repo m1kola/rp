@@ -9,6 +9,8 @@ import (
 	uuid "github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
 
+	"github.com/jim-minter/rp/pkg/api"
+	"github.com/jim-minter/rp/pkg/api/v20191231preview"
 	"github.com/jim-minter/rp/pkg/backend"
 	"github.com/jim-minter/rp/pkg/database"
 	"github.com/jim-minter/rp/pkg/env"
@@ -44,7 +46,11 @@ func run(ctx context.Context, log *logrus.Entry) error {
 		return err
 	}
 
-	f, err := frontend.NewFrontend(ctx, log.WithField("component", "frontend"), env, db)
+	apis := map[string]api.Version{
+		"2019-12-31-preview": v20191231preview.NewAPI(env),
+	}
+
+	f, err := frontend.NewFrontend(ctx, log.WithField("component", "frontend"), env, db, apis)
 	if err != nil {
 		return err
 	}

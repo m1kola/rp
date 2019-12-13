@@ -24,7 +24,7 @@ func (f *frontend) postOpenShiftClusterCredentials(w http.ResponseWriter, r *htt
 
 	r.URL.Path = filepath.Dir(r.URL.Path)
 
-	b, err := f._getOpenShiftCluster(r, api.APIs[vars["api-version"]]["OpenShiftClusterCredentials"].(api.OpenShiftClusterToExternal))
+	b, err := f._getOpenShiftCluster(r, f.apis[vars["api-version"]].OpenShiftClusterCredentials())
 
 	reply(log, w, b, err)
 }

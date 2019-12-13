@@ -1,11 +1,8 @@
 package v20191231preview
 
 import (
-	"context"
-
-	"github.com/Azure/go-autorest/autorest"
-
 	"github.com/jim-minter/rp/pkg/api"
+	"github.com/jim-minter/rp/pkg/env"
 )
 
 const (
@@ -13,25 +10,23 @@ const (
 	resourceType              = "openShiftClusters"
 )
 
-type openShiftCluster struct{}
+type openShiftCluster struct {
+	*DynamicValidator
+}
 
-var _ api.OpenShiftClusterToExternal = (*openShiftCluster)(nil)
-var _ api.OpenShiftClustersToExternal = (*openShiftCluster)(nil)
-var _ api.OpenShiftClusterToInternal = (*openShiftCluster)(nil)
-
-func (openShiftCluster) OpenShiftClusterToExternal(oc *api.OpenShiftCluster) interface{} {
+func (*openShiftCluster) OpenShiftClusterToExternal(oc *api.OpenShiftCluster) interface{} {
 	return openShiftClusterToExternal(oc)
 }
 
-func (openShiftCluster) OpenShiftClustersToExternal(ocs []*api.OpenShiftCluster) interface{} {
+func (*openShiftCluster) OpenShiftClustersToExternal(ocs []*api.OpenShiftCluster) interface{} {
 	return openShiftClustersToExternal(ocs)
 }
 
-func (openShiftCluster) OpenShiftClusterToInternal(oc interface{}, out *api.OpenShiftCluster) {
+func (*openShiftCluster) OpenShiftClusterToInternal(oc interface{}, out *api.OpenShiftCluster) {
 	openShiftClusterToInternal(oc.(*OpenShiftCluster), out)
 }
 
-func (openShiftCluster) ValidateOpenShiftCluster(location, resourceID string, oc interface{}, curr *api.OpenShiftCluster) error {
+func (*openShiftCluster) ValidateOpenShiftCluster(location, resourceID string, oc interface{}, curr *api.OpenShiftCluster) error {
 	var current *OpenShiftCluster
 	if curr != nil {
 		current = openShiftClusterToExternal(curr)
@@ -39,21 +34,34 @@ func (openShiftCluster) ValidateOpenShiftCluster(location, resourceID string, oc
 	return validateOpenShiftCluster(location, resourceID, oc.(*OpenShiftCluster), current)
 }
 
-func (openShiftCluster) ValidateOpenShiftClusterDynamic(ctx context.Context, getFPAuthorizer func(string, string) (autorest.Authorizer, error), oc *api.OpenShiftCluster) error {
-	return validateOpenShiftClusterDynamic(ctx, getFPAuthorizer, oc)
-}
-
 type openShiftClusterCredentials struct{}
 
-var _ api.OpenShiftClusterToExternal = (*openShiftClusterCredentials)(nil)
-
-func (openShiftClusterCredentials) OpenShiftClusterToExternal(oc *api.OpenShiftCluster) interface{} {
+func (*openShiftClusterCredentials) OpenShiftClusterToExternal(oc *api.OpenShiftCluster) interface{} {
 	return openShiftClusterCredentialsToExternal(oc)
 }
 
-func init() {
-	api.APIs["2019-12-31-preview"] = map[string]interface{}{
-		"OpenShiftCluster":            &openShiftCluster{},
-		"OpenShiftClusterCredentials": &openShiftClusterCredentials{},
+type version struct {
+	oc  *openShiftCluster
+	occ *openShiftClusterCredentials
+}
+
+func (v *version) OpenShiftCluster() interface {
+	api.OpenShiftClusterToExternal
+	api.OpenShiftClustersToExternal
+	api.OpenShiftClusterToInternal
+} {
+	return v.oc
+}
+func (v *version) OpenShiftClusterCredentials() api.OpenShiftClusterToExternal {
+	return v.occ
+}
+
+// TODO: Clean up the mess
+func NewAPI(env env.Interface) api.Version {
+	return &version{
+		oc: &openShiftCluster{
+			DynamicValidator: NewDynamicValidator(env.FPAuthorizer),
+		},
+		occ: &openShiftClusterCredentials{},
 	}
 }

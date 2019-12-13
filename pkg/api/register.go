@@ -2,8 +2,6 @@ package api
 
 import (
 	"context"
-
-	"github.com/Azure/go-autorest/autorest"
 )
 
 // OpenShiftClusterToExternal is implemented by all APIs - it enables conversion
@@ -26,8 +24,15 @@ type OpenShiftClustersToExternal interface {
 type OpenShiftClusterToInternal interface {
 	OpenShiftClusterToInternal(interface{}, *OpenShiftCluster)
 	ValidateOpenShiftCluster(string, string, interface{}, *OpenShiftCluster) error
-	ValidateOpenShiftClusterDynamic(context.Context, func(string, string) (autorest.Authorizer, error), *OpenShiftCluster) error
+	ValidateOpenShiftClusterDynamic(context.Context, *OpenShiftCluster) error
 }
 
-// APIs is the map of registered external APIs
-var APIs = map[string]map[string]interface{}{}
+// Version represents an API version
+type Version interface {
+	OpenShiftCluster() interface {
+		OpenShiftClusterToExternal
+		OpenShiftClustersToExternal
+		OpenShiftClusterToInternal
+	}
+	OpenShiftClusterCredentials() OpenShiftClusterToExternal
+}

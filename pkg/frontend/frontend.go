@@ -28,6 +28,7 @@ type frontend struct {
 	baseLog *logrus.Entry
 	env     env.Interface
 	db      *database.Database
+	apis    map[string]api.Version
 
 	l net.Listener
 	s *http.Server
@@ -41,13 +42,14 @@ type Runnable interface {
 }
 
 // NewFrontend returns a new runnable frontend
-func NewFrontend(ctx context.Context, baseLog *logrus.Entry, env env.Interface, db *database.Database) (Runnable, error) {
+func NewFrontend(ctx context.Context, baseLog *logrus.Entry, env env.Interface, db *database.Database, apis map[string]api.Version) (Runnable, error) {
 	var err error
 
 	f := &frontend{
 		baseLog: baseLog,
 		env:     env,
 		db:      db,
+		apis:    apis,
 	}
 
 	l, err := f.env.Listen()
@@ -179,7 +181,7 @@ func (f *frontend) Run(stop <-chan struct{}, done chan<- struct{}) {
 	r.Use(middleware.Log(f.baseLog))
 	r.Use(middleware.Panic)
 	r.Use(middleware.Headers)
-	r.Use(middleware.Validate)
+	r.Use(middleware.Validate(f.apis))
 	r.Use(middleware.Body)
 
 	r.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

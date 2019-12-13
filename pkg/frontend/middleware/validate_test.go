@@ -9,7 +9,8 @@ import (
 	"github.com/gorilla/mux"
 
 	"github.com/jim-minter/rp/pkg/api"
-	_ "github.com/jim-minter/rp/pkg/api/v20191231preview"
+	v20191231preview "github.com/jim-minter/rp/pkg/api/v20191231preview"
+	"github.com/jim-minter/rp/pkg/env"
 	"github.com/jim-minter/rp/test/validate"
 )
 
@@ -31,7 +32,10 @@ func TestValidate(t *testing.T) {
 		Queries("api-version", "2.0").
 		HandlerFunc(func(w http.ResponseWriter, r *http.Request) {})
 
-	router.Use(Validate)
+	apis := map[string]api.Version{
+		"2019-12-31-preview": v20191231preview.NewAPI(env.NewTest(nil, nil)),
+	}
+	router.Use(Validate(apis))
 
 	tests := []struct {
 		name    string
