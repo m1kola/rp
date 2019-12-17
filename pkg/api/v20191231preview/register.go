@@ -45,18 +45,14 @@ type version struct {
 	occ *openShiftClusterCredentials
 }
 
-func (v *version) OpenShiftCluster() interface {
-	api.OpenShiftClusterToExternal
-	api.OpenShiftClustersToExternal
-	api.OpenShiftClusterToInternal
-} {
+func (v *version) OpenShiftCluster() api.OpenShiftClusterInterface {
 	return v.oc
 }
 func (v *version) OpenShiftClusterCredentials() api.OpenShiftClusterToExternal {
 	return v.occ
 }
 
-// TODO: Clean up the mess
+// TODO: Clean up the mess - get rid of env if possible
 func NewAPI(env env.Interface) api.Version {
 	return &version{
 		oc: &openShiftCluster{

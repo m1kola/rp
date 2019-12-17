@@ -27,12 +27,15 @@ type OpenShiftClusterToInternal interface {
 	ValidateOpenShiftClusterDynamic(context.Context, *OpenShiftCluster) error
 }
 
+// TODO: Replace this name
+type OpenShiftClusterInterface interface {
+	OpenShiftClusterToExternal
+	OpenShiftClustersToExternal
+	OpenShiftClusterToInternal
+}
+
 // Version represents an API version
 type Version interface {
-	OpenShiftCluster() interface {
-		OpenShiftClusterToExternal
-		OpenShiftClustersToExternal
-		OpenShiftClusterToInternal
-	}
+	OpenShiftCluster() OpenShiftClusterInterface
 	OpenShiftClusterCredentials() OpenShiftClusterToExternal
 }
